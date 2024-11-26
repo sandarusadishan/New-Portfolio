@@ -1,0 +1,131 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    color: #ededed;
+    background-color: #000;
+}
+
+.header {
+    position: fixed;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    padding: 10px 10%;
+    background: #000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 30px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.navbar a {
+    display: inline-block;
+    font-size: 30px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 50;
+    margin-left: 25px;
+    transition: 1s;
+}
+
+.navbar a:hover {
+    color: #0ef;
+}
+
+.about {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 50px 10%;
+    color: #ededed;
+    margin-top: 80px; 
+    background: url('./Graphic Designer Online Portfolio.png') no-repeat center center;
+    background-size: cover;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+.about-content {
+    max-width: 800px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 15px;
+    padding: 30px;
+    border: 2px solid #0ef;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    opacity: 0.95;
+}
+
+.about-content h2 {
+    font-size: 32px;
+    color: #0ef;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.about-content p {
+    font-size: 16px;
+    line-height: 1.8;
+    text-align: justify;
+    letter-spacing: 0.5px;
+    word-spacing: 2px;
+    margin-bottom: 20px;
+}
+
+@keyframes slideRight {
+    0% {
+        transform: translateX(-100px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .about {
+        padding: 40px 5%;
+    }
+
+    .about-content {
+        padding: 20px;
+    }
+
+    .about-content h2 {
+        font-size: 24px;
+    }
+
+    .about-content p {
+        font-size: 14px;
+    }
+}
+.about-content {
+    opacity: 90%;
+    transform: translateY(50px);
+    animation: fadeInUp 1.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
