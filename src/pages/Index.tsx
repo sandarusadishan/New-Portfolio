@@ -13,7 +13,6 @@ import {
   Palette,
   Server,
   Smartphone,
-  Terminal,
   ArrowRight,
   Clock,
   BriefcaseBusiness,
@@ -23,6 +22,8 @@ import {
   MessageSquare,
   Youtube,
   Instagram,
+  Sun,
+  Moon,
 } from "lucide-react";
 import emailjs from '@emailjs/browser';
 
@@ -93,7 +94,7 @@ const TECHNOLOGIES = {
     },
     {
       name: "Tailwind CSS",
-      logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg",
+      logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg",
       level: 90,
       description: "Utility-first responsive design system",
     },
@@ -254,10 +255,17 @@ const CustomStyles = () => (
       border: 1px solid rgba(255,255,255,0.12);
       backdrop-filter: blur(10px);
     }
+    .dark .glass {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
     .bg-grid {
       background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
       background-size: 24px 24px, 24px 24px;
       background-position: -1px -1px, -1px -1px;
+    }
+    .dark .bg-grid {
+      background-image: linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
     }
     @keyframes floatSlow {
       0%,100%{ transform: translateY(0) }
@@ -266,6 +274,27 @@ const CustomStyles = () => (
     .float-slow { animation: floatSlow 10s ease-in-out infinite; }
     .footer-shadow {
       box-shadow: 0 -10px 15px -3px rgba(0,0,0,0.1), 0 -4px 6px -4px rgba(0,0,0,0.1);
+    }
+    .dark .footer-shadow {
+      box-shadow: 0 -10px 15px -3px rgba(0,0,0,0.3), 0 -4px 6px -4px rgba(0,0,0,0.3);
+    }
+    .flip-card-inner {
+        transform-style: preserve-3d;
+        transition: transform 0.6s;
+    }
+    .flip-card-front, .flip-card-back {
+        backface-visibility: hidden;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .flip-card-back {
+        transform: rotateY(180deg);
+    }
+    .group:hover .flip-card-inner {
+        transform: rotateY(180deg);
     }
   `}</style>
 );
@@ -313,9 +342,15 @@ const Button = ({ children, asChild, variant = "solid", size = "md", className =
     return `${base} ${variants[variant]} ${sizes[size]} ${className}`;
   }, [variant, size, className]);
 
-  const Comp = asChild ? "a" : "button";
+  const Comp = asChild ? motion.a : motion.button;
   return (
-    <Comp className={classes} {...props}>
+    <Comp 
+      className={classes} 
+      whileHover={{ scale: 1.05, backgroundColor: (variant === 'hero' ? '#2563eb' : (variant === 'glass' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)')) }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ duration: 0.2 }}
+      {...props}
+    >
       {children}
     </Comp>
   );
@@ -386,6 +421,30 @@ const Portfolio = () => {
   const [statusMessage, setStatusMessage] = useState("");
   const formRef = useRef();
   const typed = useTypewriter(PROFILE.headlineRoles);
+  
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedMode = localStorage.getItem("darkMode");
+      return savedMode === "true" || window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    if (typeof window !== "undefined") {
+      localStorage.setItem("darkMode", darkMode);
+    }
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    setDarkMode(prevMode => !prevMode);
+  };
+  
   const allSkills = useMemo(() => {
     const skillsByCategory = Object.entries(TECHNOLOGIES).map(([category, skills]) => ({
       category: category.replace(/_/g, " "),
@@ -441,7 +500,7 @@ const Portfolio = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-[linear-gradient(135deg,#0f172a_0%,#111827_100%)] text-gray-100 selection:bg-indigo-500/40">
+    <div className={`relative min-h-screen ${darkMode ? 'dark' : ''} bg-[linear-gradient(135deg,#f1f5f9_0%,#e2e8f0_100%)] dark:bg-[linear-gradient(135deg,#0f172a_0%,#111827_100%)] text-slate-800 dark:text-gray-100 selection:bg-indigo-500/40`}>
       <CustomStyles />
       <BackgroundEffects />
 
@@ -450,8 +509,8 @@ const Portfolio = () => {
         <div className="mx-auto max-w-7xl px-4">
           <div className="mt-4 mb-3 glass rounded-2xl px-4 h-14 flex items-center justify-between">
             <button onClick={() => scrollTo("home")} className="font-bold tracking-tight text-lg">
-              <span className="text-white">{PROFILE.name}</span>
-              <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/80">
+              <span className="text-slate-900 dark:text-white">{PROFILE.name}</span>
+              <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-white/10 dark:bg-white/10 px-2 py-0.5 text-xs text-slate-900 dark:text-white/80">
                 <Sparkles size={14} /> Portfolio
               </span>
             </button>
@@ -461,16 +520,24 @@ const Portfolio = () => {
                 <button
                   key={id}
                   onClick={() => scrollTo(id)}
-                  className={`capitalize text-sm transition hover:text-white ${activeSection === id ? "text-white" : "text-white/70"}`}
+                  className={`capitalize text-sm transition hover:text-slate-900 dark:hover:text-white ${activeSection === id ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-white/70"}`}
                 >
                   {id}
                 </button>
               ))}
+              <Button onClick={toggleDarkMode} variant="icon" size="sm" className="w-9 h-9">
+                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </Button>
             </nav>
 
-            <button className="md:hidden p-2" onClick={() => setIsMenuOpen((v) => !v)}>
-              {isMenuOpen ? <X /> : <Menu />}
-            </button>
+            <div className="flex items-center gap-2 md:hidden">
+              <Button onClick={toggleDarkMode} variant="icon" size="sm" className="w-9 h-9">
+                  {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </Button>
+              <button className="p-2" onClick={() => setIsMenuOpen((v) => !v)}>
+                {isMenuOpen ? <X /> : <Menu />}
+              </button>
+            </div>
           </div>
 
           <AnimatePresence>
@@ -508,16 +575,16 @@ const Portfolio = () => {
               transition={{ duration: 0.7 }}
               className="order-2 lg:order-1"
             >
-              <p className="text-white/70">Hello, I'm</p>
-              <h1 className="mt-1 text-4xl sm:text-5xl font-extrabold tracking-tight">
+              <p className="text-slate-500 dark:text-white/70">Hello, I'm</p>
+              <h1 className="mt-1 text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 {PROFILE.name}
               </h1>
               <div className="mt-3 text-xl sm:text-2xl text-white/90 h-[2.2em]">
-                <span className="text-white/70">I am </span>
-                <span className="text-white font-semibold">{typed}</span>
+                <span className="text-slate-500 dark:text-white/70">I am </span>
+                <span className="text-slate-900 dark:text-white font-semibold">{typed}</span>
                 <span className="animate-pulse">▍</span>
               </div>
-              <p className="mt-5 text-white/70 max-w-prose">
+              <p className="mt-5 text-slate-600 dark:text-white/70 max-w-prose">
                 I craft performant web apps with delightful, accessible interfaces. I love shipping polished
                 experiences and collaborating in product‑minded teams.
               </p>
@@ -541,9 +608,9 @@ const Portfolio = () => {
               <div className="relative aspect-square max-w-sm mx-auto">
                 <div className="absolute inset-0 rounded-3xl bg-grid opacity-40" />
                 <img
-                  src="https://placehold.co/600x600/0f172a/ffffff?text=Your+Photo"
+                  src="https://placehold.co/600x600/f1f5f9/000000?text=Your+Photo"
                   alt="Profile"
-                  className="relative z-10 w-full h-full object-cover rounded-3xl border border-white/10"
+                  className="relative z-10 w-full h-full object-cover rounded-3xl border border-slate-200 dark:border-white/10"
                 />
                 <motion.div
                   className="absolute -inset-3 rounded-[2rem] bg-gradient-to-tr from-indigo-500/20 to-sky-400/10 blur-2xl"
@@ -559,7 +626,7 @@ const Portfolio = () => {
         <section id="services" className="py-24 px-4">
           <div className="max-w-7xl mx-auto">
             <motion.h2
-              className="text-3xl sm:text-4xl font-bold text-center"
+              className="text-3xl sm:text-4xl font-bold text-center text-slate-900 dark:text-white"
               initial="hidden"
               whileInView="show"
               viewport={{ once: true }}
@@ -579,13 +646,13 @@ const Portfolio = () => {
                 <motion.div
                   key={s.title}
                   variants={fadeUp}
-                  className="glass rounded-2xl p-6 hover:bg-white/10 transition"
+                  className="glass rounded-2xl p-6 transition border-slate-200 hover:bg-slate-200/50 dark:border-white/10 dark:hover:bg-white/10"
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <s.icon className="w-10 h-10 text-indigo-400" />
-                  <h3 className="mt-4 font-semibold text-lg">{s.title}</h3>
-                  <p className="mt-2 text-sm text-white/70">{s.description}</p>
+                  <s.icon className="w-10 h-10 text-indigo-500 dark:text-indigo-400" />
+                  <h3 className="mt-4 font-semibold text-lg text-slate-900 dark:text-white">{s.title}</h3>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-white/70">{s.description}</p>
                 </motion.div>
               ))}
             </motion.div>
@@ -596,20 +663,20 @@ const Portfolio = () => {
         <section id="about" className="py-24 px-4">
           <div className="max-w-5xl mx-auto grid lg:grid-cols-3 gap-10 items-center">
             <motion.div className="lg:col-span-2" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
-              <h2 className="text-3xl sm:text-4xl font-bold">About Me</h2>
-              <p className="mt-4 text-white/80 leading-relaxed">
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">About Me</h2>
+              <p className="mt-4 text-slate-600 dark:text-white/80 leading-relaxed">
                 I'm a passionate engineer with a strong foundation in modern web technologies. I turn complex
                 problems into simple, beautiful, and intuitive experiences.
               </p>
-              <p className="mt-4 text-white/70">
+              <p className="mt-4 text-slate-500 dark:text-white/70">
                 I care about performance, accessibility, and clean architecture. Outside work, I explore open
                 source, write, and prototype ideas.
               </p>
             </motion.div>
             <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-              <div className="glass rounded-2xl p-6">
-                <h3 className="font-semibold">Quick Facts</h3>
-                <ul className="mt-3 space-y-2 text-white/80 text-sm">
+              <div className="glass rounded-2xl p-6 border-slate-200 dark:border-white/10">
+                <h3 className="font-semibold text-slate-900 dark:text-white">Quick Facts</h3>
+                <ul className="mt-3 space-y-2 text-slate-600 dark:text-white/80 text-sm">
                   <li>• Based on the web 🌍</li>
                   <li>• Product‑minded & detail‑oriented</li>
                   <li>• Love design systems & patterns</li>
@@ -622,39 +689,16 @@ const Portfolio = () => {
         {/* Skills */}
         <section id="skills" className="py-24 px-4">
           <div className="max-w-6xl mx-auto">
-            <motion.h2 className="text-3xl sm:text-4xl font-bold text-center" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>Technical Skills</motion.h2>
+            <motion.h2 className="text-3xl sm:text-4xl font-bold text-center text-slate-900 dark:text-white" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>Technical Skills</motion.h2>
             <div className="mt-12 grid md:grid-cols-2 gap-8">
               {Object.entries(TECHNOLOGIES).map(([category, skills]) => (
                 <div key={category} className="space-y-4">
-                  <h3 className="text-xl font-bold capitalize">{category.replace(/_/g, " ")}</h3>
-                  {skills.map((s, i) => (
-                    <motion.div
-                      key={s.name}
-                      initial={{ opacity: 0, y: 24 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: i * 0.05 }}
-                      className="glass rounded-2xl p-5"
-                      whileHover={{ scale: 1.02 }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <img src={s.logo} alt={s.name} className="w-5 h-5" />
-                          <span className="font-medium">{s.name}</span>
-                        </div>
-                        <span className="text-white/70 text-sm">{s.level}%</span>
-                      </div>
-                      <div className="mt-3 h-2 rounded-full bg-white/10 overflow-hidden">
-                        <motion.div
-                          className="h-full bg-gradient-to-r from-indigo-400 to-sky-400"
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${s.level}%` }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.9, ease: "easeOut" }}
-                        />
-                      </div>
-                    </motion.div>
-                  ))}
+                  <h3 className="text-xl font-bold capitalize text-slate-900 dark:text-white">{category.replace(/_/g, " ")}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {skills.map((s, i) => (
+                      <SkillCard key={s.name} skill={s} index={i} />
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -664,7 +708,7 @@ const Portfolio = () => {
         {/* Projects */}
         <section id="projects" className="py-24 px-4">
           <div className="max-w-7xl mx-auto">
-            <motion.h2 className="text-3xl sm:text-4xl font-bold text-center" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
+            <motion.h2 className="text-3xl sm:text-4xl font-bold text-center text-slate-900 dark:text-white" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
               Featured Projects
             </motion.h2>
             <motion.div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-7" initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={stagger}>
@@ -678,27 +722,27 @@ const Portfolio = () => {
         {/* Timeline */}
         <section id="timeline" className="py-24 px-4">
           <div className="max-w-5xl mx-auto">
-            <motion.h2 className="text-3xl sm:text-4xl font-bold text-center" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
+            <motion.h2 className="text-3xl sm:text-4xl font-bold text-center text-slate-900 dark:text-white" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
               Professional Timeline
             </motion.h2>
             <div className="mt-12 relative">
-              <div className="absolute left-4 sm:left-1/2 sm:-translate-x-1/2 top-0 bottom-0 w-px bg-white/10" />
+              <div className="absolute left-4 sm:left-1/2 sm:-translate-x-1/2 top-0 bottom-0 w-px bg-slate-200 dark:bg-white/10" />
               <div className="space-y-10">
                 {TIMELINE.map((e, idx) => (
                   <motion.div key={idx} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="relative">
                     <div className={`sm:grid sm:grid-cols-2 gap-8 ${idx % 2 ? "sm:direction-rtl" : ""}`}>
                       <div className={`sm:text-right ${idx % 2 ? "sm:order-2" : ""}`}>
-                        <p className="text-indigo-300 font-medium flex items-center gap-2 sm:justify-end"><Clock size={16} /> {e.year}</p>
-                        <h3 className="mt-2 font-semibold">{e.title}</h3>
-                        <p className="text-white/70 text-sm">{e.company}</p>
+                        <p className="text-indigo-500 dark:text-indigo-300 font-medium flex items-center gap-2 sm:justify-end"><Clock size={16} /> {e.year}</p>
+                        <h3 className="mt-2 font-semibold text-slate-900 dark:text-white">{e.title}</h3>
+                        <p className="text-slate-600 dark:text-white/70 text-sm">{e.company}</p>
                       </div>
                       <div className={`${idx % 2 ? "sm:order-1" : ""}`}>
-                        <div className="glass rounded-2xl p-5">
-                          <p className="text-white/80 text-sm leading-relaxed">{e.description}</p>
+                        <div className="glass rounded-2xl p-5 border-slate-200 dark:border-white/10">
+                          <p className="text-slate-600 dark:text-white/80 text-sm leading-relaxed">{e.description}</p>
                         </div>
                       </div>
                     </div>
-                    <span className="absolute left-3.5 sm:left-1/2 sm:-translate-x-1/2 top-2 inline-block w-3 h-3 rounded-full bg-indigo-400 ring-4 ring-indigo-400/20" />
+                    <span className="absolute left-3.5 sm:left-1/2 sm:-translate-x-1/2 top-2 inline-block w-3 h-3 rounded-full bg-indigo-500 dark:bg-indigo-400 ring-4 ring-indigo-500/20 dark:ring-indigo-400/20" />
                   </motion.div>
                 ))}
               </div>
@@ -709,14 +753,14 @@ const Portfolio = () => {
         {/* Contact */}
         <section id="contact" className="py-24 px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <motion.h2 className="text-3xl sm:text-4xl font-bold" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
+            <motion.h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
               Let's Connect
             </motion.h2>
-            <motion.p className="mt-4 text-white/80 max-w-prose mx-auto" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
+            <motion.p className="mt-4 text-slate-600 dark:text-white/80 max-w-prose mx-auto" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
               I'm open to new opportunities, collaborations, or a friendly chat. Fill out the form below to get in touch.
             </motion.p>
             <motion.div
-              className="mt-10 glass rounded-2xl p-6 max-w-lg mx-auto"
+              className="mt-10 glass rounded-2xl p-6 max-w-lg mx-auto border-slate-200 dark:border-white/10"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -724,43 +768,43 @@ const Portfolio = () => {
             >
               <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-4">
                 <div>
-                  <label htmlFor="user_name" className="block text-sm font-medium text-white/80 mb-1 text-left">Your Name</label>
+                  <label htmlFor="user_name" className="block text-sm font-medium text-slate-800 dark:text-white/80 mb-1 text-left">Your Name</label>
                   <input
                     type="text"
                     id="user_name"
                     name="user_name"
                     required
-                    className="w-full rounded-lg bg-white/5 border border-white/10 text-white p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-lg bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-white/80 mb-1 text-left">Email Address</label>
+                  <label htmlFor="email" className="block text-sm font-medium text-slate-800 dark:text-white/80 mb-1 text-left">Email Address</label>
                   <input
                     type="email"
                     id="email"
                     name="email"
                     required
-                    className="w-full rounded-lg bg-white/5 border border-white/10 text-white p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-lg bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label htmlFor="pNumber" className="block text-sm font-medium text-white/80 mb-1 text-left">WhatsApp Number</label>
+                  <label htmlFor="pNumber" className="block text-sm font-medium text-slate-800 dark:text-white/80 mb-1 text-left">WhatsApp Number</label>
                   <input
                     type="tel"
                     id="pNumber"
                     name="pNumber"
                     required
-                    className="w-full rounded-lg bg-white/5 border border-white/10 text-white p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-lg bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-white/80 mb-1 text-left">Message</label>
+                  <label htmlFor="message" className="block text-sm font-medium text-slate-800 dark:text-white/80 mb-1 text-left">Message</label>
                   <textarea
                     id="message"
                     name="message"
                     rows="4"
                     required
-                    className="w-full rounded-lg bg-white/5 border border-white/10 text-white p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-lg bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div className="text-right">
@@ -787,29 +831,29 @@ const Portfolio = () => {
         <footer className="py-12 px-4 glass rounded-t-2xl footer-shadow">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <a href={PROFILE.social.linkedin} target="_blank" rel="noreferrer" className="text-white/70 hover:text-white transition-colors duration-300">
+              <a href={PROFILE.social.linkedin} target="_blank" rel="noreferrer" className="text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
                 <Linkedin size={24} />
               </a>
-              <a href={PROFILE.social.github} target="_blank" rel="noreferrer" className="text-white/70 hover:text-white transition-colors duration-300">
+              <a href={PROFILE.social.github} target="_blank" rel="noreferrer" className="text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
                 <Github size={24} />
               </a>
-              <a href={PROFILE.social.twitter} target="_blank" rel="noreferrer" className="text-white/70 hover:text-white transition-colors duration-300">
+              <a href={PROFILE.social.twitter} target="_blank" rel="noreferrer" className="text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
                 <Twitter size={24} />
               </a>
-              <a href={PROFILE.social.facebook} target="_blank" rel="noreferrer" className="text-white/70 hover:text-white transition-colors duration-300">
+              <a href={PROFILE.social.facebook} target="_blank" rel="noreferrer" className="text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
                 <Facebook size={24} />
               </a>
-              <a href={PROFILE.social.whatsapp} target="_blank" rel="noreferrer" className="text-white/70 hover:text-white transition-colors duration-300">
+              <a href={PROFILE.social.whatsapp} target="_blank" rel="noreferrer" className="text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
                 <MessageSquare size={24} />
               </a>
-              <a href={PROFILE.social.youtube} target="_blank" rel="noreferrer" className="text-white/70 hover:text-white transition-colors duration-300">
+              <a href={PROFILE.social.youtube} target="_blank" rel="noreferrer" className="text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
                 <Youtube size={24} />
               </a>
-              <a href={PROFILE.social.instagram} target="_blank" rel="noreferrer" className="text-white/70 hover:text-white transition-colors duration-300">
+              <a href={PROFILE.social.instagram} target="_blank" rel="noreferrer" className="text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
                 <Instagram size={24} />
               </a>
             </div>
-            <p className="text-sm text-white/50 text-center md:text-right">© {new Date().getFullYear()} {PROFILE.name}. All Rights Reserved.</p>
+            <p className="text-sm text-slate-500 dark:text-white/50 text-center md:text-right">© {new Date().getFullYear()} {PROFILE.name}. All Rights Reserved.</p>
           </div>
         </footer>
       </main>
@@ -825,7 +869,7 @@ const ProjectCard = ({ project }) => {
   return (
     <motion.div variants={fadeUp} className="group">
       <div ref={ref} className="[transform-style:preserve-3d] transition will-change-transform">
-        <div className="glass rounded-2xl overflow-hidden">
+        <div className="glass rounded-2xl overflow-hidden border-slate-200 dark:border-white/10">
           {project.cover && (
             <div className="relative overflow-hidden">
               <img src={project.cover} alt="cover" className="h-40 w-full object-cover" />
@@ -833,11 +877,11 @@ const ProjectCard = ({ project }) => {
             </div>
           )}
           <div className="p-5">
-            <h3 className="font-semibold text-lg">{project.title}</h3>
-            <p className="mt-2 text-sm text-white/75">{project.description}</p>
+            <h3 className="font-semibold text-lg text-slate-900 dark:text-white">{project.title}</h3>
+            <p className="mt-2 text-sm text-slate-600 dark:text-white/75">{project.description}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {project.tags?.map((t) => (
-                <span key={t} className="px-2.5 py-1 rounded-full bg-white/10 text-xs text-white/80 border border-white/10">
+                <span key={t} className="px-2.5 py-1 rounded-full bg-slate-100/50 dark:bg-white/10 text-xs text-slate-800 dark:text-white/80 border border-slate-200 dark:border-white/10">
                   {t}
                 </span>
               ))}
@@ -856,5 +900,47 @@ const ProjectCard = ({ project }) => {
     </motion.div>
   );
 };
+
+const SkillCard = ({ skill, index }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <motion.div
+      key={skill.name}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: index * 0.05 }}
+      className="group relative h-40"
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+    >
+      <div className="flip-card-inner">
+        {/* Front of the card */}
+        <motion.div 
+            className="flip-card-front glass rounded-2xl p-5 flex flex-col items-center justify-center border-slate-200 dark:border-white/10"
+            animate={{ rotateY: isHovered ? -180 : 0, opacity: isHovered ? 0 : 1 }}
+            transition={{ duration: 0.6 }}
+        >
+          <img src={skill.logo} alt={skill.name} className="w-12 h-12" />
+          <span className="mt-3 font-medium text-slate-900 dark:text-white">{skill.name}</span>
+        </motion.div>
+        
+        {/* Back of the card */}
+        <motion.div 
+            className="flip-card-back glass rounded-2xl p-5 flex flex-col items-center justify-center border-slate-200 dark:border-white/10"
+            animate={{ rotateY: isHovered ? 0 : 180, opacity: isHovered ? 1 : 0 }}
+            transition={{ duration: 0.6 }}
+        >
+          <span className="font-bold text-4xl bg-gradient-to-r from-indigo-500 to-sky-400 text-transparent bg-clip-text">
+            {skill.level}%
+          </span>
+          <p className="mt-2 text-sm text-slate-600 dark:text-white/70 text-center">{skill.description}</p>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+};
+
 
 export default Portfolio;
