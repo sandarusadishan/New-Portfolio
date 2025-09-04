@@ -27,6 +27,9 @@ import {
 } from "lucide-react";
 import emailjs from '@emailjs/browser';
 
+// हे त्रुटिचे निराकरण करण्यासाठी, कृपया तुमच्या टर्मिनलमध्ये `npm install @emailjs/browser` हा कमांड चालवा.
+// To resolve this error, please run the command `npm install @emailjs/browser` in your terminal.
+
 /* ===============================
   🔧 QUICK PERSONALIZATION (EDIT)
   =============================== */
