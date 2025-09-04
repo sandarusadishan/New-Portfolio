@@ -13,7 +13,9 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' &&
     componentTagger(),
-  ].filter(Boolean),
+  ],
+  base : process.env.VITE_BASE_PATH || "/New-Portfolio",
+  .filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
